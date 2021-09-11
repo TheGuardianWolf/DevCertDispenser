@@ -33,7 +33,7 @@ namespace DevCertDispenser.Pages.Downloads
             _logger.LogDebug("Domains submitted for self signed certificate: {domain}", domain);
 
 
-            var payload = await _certificateService.CreateSelfSignedCertificate(domain[0], domain.Length > 1 ? domain : null);
+            var payload = await _certificateService.CreateSelfSignedCertificate(domain);
 
             var zipEntries = new Dictionary<string, byte[]>
             {
