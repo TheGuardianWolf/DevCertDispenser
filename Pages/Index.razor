@@ -1,0 +1,47 @@
+﻿@page "/"
+@using System.Web
+@inject ICertificateService certificateService
+@inject IJSRuntime JsRuntime
+
+<div class="flex flex-grow flex-col bg-red-50 items-center justify-center">
+    <div class="text-center">
+        <h1 class="outline-none text-4xl font-semibold">DevCert Dispenser</h1>
+    </div>
+    <div class="flex flex-col justify-center items-center mt-8">
+        <label label-for="domains">
+            Enter domains to register on certificate (wildcards permitted, one per line)
+        </label>
+        <textarea id="domains" class="mt-4 w-96" @bind="RegisterDomains" required />
+    </div>
+    <div class="flex justify-center mt-8">
+        <a class="mx-4 py-2 px-4 rounded border-2 border-blue-500" href="/downloads/rootca" download>Get Root Certificate</a>
+        <a class="mx-4 py-2 px-4 rounded bg-blue-500 text-white" href="@($"/downloads/selfsigned{DomainsParameter}")" @onclick="DispenseCheck" @onclick:preventDefault="HasDomainsParameter" download>Dispense!</a>
+    </div>
+</div>
+
+@code {
+    private string RegisterDomains = "";
+
+    private string DomainsParameter
+    {
+        get
+        {
+            var domains = RegisterDomains.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (domains.Length > 0) {
+                return "?domain=" + string.Join("&domain=", RegisterDomains.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(HttpUtility.UrlEncode));
+            }
+            return null;
+        }
+    }
+
+    private bool HasDomainsParameter => string.IsNullOrWhiteSpace(DomainsParameter);
+
+    private async void DispenseCheck()
+    {
+        if (string.IsNullOrWhiteSpace(DomainsParameter))
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Domain list is empty");
+            return;
+        }
+    }
+}
